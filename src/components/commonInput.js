@@ -1,36 +1,76 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Input, Button, message } from "antd";
+import { connect } from "react-redux";
+import { addUser, updateUser } from "../actions/userActions";
 
-const InputHandler = ({ onSubmit, editMode = false }) => {
+const InputHandler = ({ onSubmit, editMode = false, editingUser, addUser, updateUser }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
 
+  useEffect(() => {
+    if (editingUser) {
+      setName(editingUser.name);
+      setEmail(editingUser.email);
+    } else {
+      setName("");
+      setEmail("");
+    }
+  }, [editingUser]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!name || !email) return;
-    onSubmit({ name, email });
+    if (!name) {
+      message.error("Name is required");
+      return;
+    }
+    if (!email) {
+      message.error("Email is required");
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      message.error("Please enter a valid email address");
+      return;
+    }
+    if (editMode && editingUser) {
+      updateUser({ ...editingUser, name, email });
+    } else {
+      addUser({ name, email });
+    }
+    setName("");
+    setEmail("");
   };
 
   return (
     <div className="header-box">
-      <input
+      <Input
         type="text"
         placeholder="Name"
-        onChange={(e) => {
-          setName(e.target.value);
-        }}
+        onChange={(e) => setName(e.target.value)}
+        value={name}
+        style={{ marginBottom: '10px' }}
       />
-      <input
+      <Input
         type="text"
         placeholder="Email"
-        onChange={(e) => {
-          setEmail(e.target.value);
-        }}
+        onChange={(e) => setEmail(e.target.value)}
+        value={email}
+        style={{ marginBottom: '10px' }}
       />
-      <button type="primary">
-        {!!editMode ? "Edit user" : "Add user"}
-      </button>
+      <Button type="primary" onClick={handleSubmit}>
+        {editMode ? "Edit user" : "Add user"}
+      </Button>
     </div>
   );
 };
 
-export default InputHandler;
+const mapStateToProps = (state) => ({
+  editingUser: state.userState.editingUser,
+});
+
+const mapDispatchToProps = {
+  addUser,
+  updateUser,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(InputHandler);

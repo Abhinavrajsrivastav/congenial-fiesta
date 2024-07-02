@@ -1,9 +1,11 @@
-// src/index.js
 import React from "react";
 import { Provider } from "react-redux";
 import App from "./App";
 import store from "./store";
 import { createRoot } from "react-dom/client";
+
+//---Importing Ant Design CSS
+import 'antd/dist/antd.css';
 
 async function enableMocking() {
   if (process.env.NODE_ENV !== "development") {
